@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { ThemeProvider } from "./components/theme/ThemeProvider";
-import Shell from "./components/layout/Shell";
+import Layout from "./Layout";
 import DashboardView from "./components/dashboard/DashboardView";
 import AgentsListView from "./components/agents/AgentsListView";
 import AgentDetailView from "./components/agents/AgentDetailView";
@@ -32,10 +32,10 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Shell>
-            <GlobalNicheScoutWizard />
-            <CommandPalette />
-            <Routes>
+          <GlobalNicheScoutWizard />
+          <CommandPalette />
+          <Routes>
+            <Route element={<Layout />}>
               <Route path="/" element={<DashboardView />} />
               <Route path="/agents" element={<AgentsListView />} />
               <Route path="/agents/:agentId" element={<AgentDetailView />} />
@@ -46,8 +46,8 @@ const App = () => (
               <Route path="/youtube-test" element={<YouTubeTest />} />
               <Route path="/youtube-results" element={<YouTubeTestOnly />} />
               <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Shell>
+            </Route>
+          </Routes>
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>
