@@ -1,0 +1,26 @@
+name: nightly-archive
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 02:00 UTC nightly
+  workflow_dispatch:
+
+jobs:
+  archive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Pack docs
+        run: tar -czf docs-$(date +'%Y-%m-%d').tar.gz docs mkdocs.yml
+      - name: Sign tarball
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          gpg --batch --yes -ab docs-*.tar.gz
+      - name: Upload to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            docs-*.tar.gz
+            docs-*.tar.gz.asc
