@@ -12,6 +12,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:components": "vitest run src/test/*.test.tsx",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
   },
@@ -71,6 +73,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
+    "@playwright/test": "^1.53.1",
     "@tailwindcss/typography": "^0.5.15",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",

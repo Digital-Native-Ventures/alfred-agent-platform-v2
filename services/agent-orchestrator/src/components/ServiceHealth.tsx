@@ -69,7 +69,7 @@ export default function ServiceHealth() {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2" data-testid="service-health">
       {services.map((service) => (
         <Tooltip key={service.name}>
           <TooltipTrigger asChild>
