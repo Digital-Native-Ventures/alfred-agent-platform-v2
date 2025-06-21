@@ -1,6 +1,6 @@
 FROM ghcr.io/locotoki/alfred-agent-platform-v2/healthcheck:0.4.0 AS healthcheck
 
-FROM gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+# ⏯ disabled for local dev → # ⏯ disabled for local dev →FROM gcr.io/google.com/cloudsdktool/cloud-sdk:latest
 
 
 # Install Python and pip for the health check wrapper

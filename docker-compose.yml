@@ -1520,6 +1520,43 @@ services:
     depends_on:
       - db-postgres
 
+  #######################################
+  # Modern Workbench stack (v1.1.1)
+  #######################################
+  architect-api:
+    build: ./services/architect-api
+    ports: ["8083:8083"]
+    networks:
+      - alfred-network
+    environment:
+      - PG_DSN=${PG_DSN}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - NATS_URL=nats://nats:4222
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+
+  agent-orchestrator:
+    build: ./services/agent-orchestrator
+    ports: ["5173:8080"]
+    networks:
+      - alfred-network
+    depends_on:
+      - architect-api
+
+  planner-api:
+    build: ./services/planner-api
+    profiles: ["agents"]
+    depends_on: [nats]
+
+  reviewer-api:
+    build: ./services/reviewer-api
+    profiles: ["agents"]
+    depends_on: [nats]
+
+  summariser:
+    build: ./services/summariser
+    profiles: ["agents"]
+    depends_on: [nats]
+
 volumes:
   redis-data:
     name: alfred-redis-data

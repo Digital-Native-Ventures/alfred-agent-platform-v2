@@ -94,4 +94,6 @@ async def planner_listener():
         print("Planner trigger", msg.data.decode())
 
 
-asyncio.create_task(planner_listener())
+@app.on_event("startup")
+async def start_planner_listener():
+    asyncio.create_task(planner_listener())
