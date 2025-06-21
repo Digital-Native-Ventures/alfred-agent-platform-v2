@@ -8,8 +8,12 @@ import openai
 import psycopg2
 import redis
 from fastapi import Body, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from nats.aio.client import Client as NATS
+from pydantic import BaseModel
+from routers import memory
+from app.routers import plan
 
 # Simple prompt builder function
 def build_prompt(system_snips, user_query):
@@ -24,6 +28,22 @@ openai.api_key = OPENAI_API_KEY
 
 app = FastAPI()
 
+# Include routers
+app.include_router(memory.router)
+app.include_router(plan.router)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+class ChatRequest(BaseModel):
+    message: str
+
 # Health route
 @app.get("/healthz")
 def health():
@@ -33,6 +53,33 @@ def health():
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+# Chat endpoint for direct OpenAI chat completion
+@app.post("/chat")
+async def chat(request: ChatRequest):
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[
+                {"role": "system", "content": "You are a helpful AI product architect. Always return clear and structured product requirement documents."},
+                {"role": "user", "content": request.message}
+            ],
+            temperature=0.7,
+            max_tokens=800
+        )
+        return {"message": response["choices"][0]["message"]["content"]}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+# OPTIONS handler for CORS preflight
+@app.options("/architect/complete")
+async def complete_options():
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+    }
+    return JSONResponse(content={"message": "OK"}, headers=headers)
+
 # SSE chat completion
 @app.post("/architect/complete")
 async def complete(req: Request):
@@ -40,15 +87,30 @@ async def complete(req: Request):
     user_query = body.get("query", "")
     system_snips = body.get("context", [])
     prompt = build_prompt(system_snips, user_query)
-    async def event_generator():
-        resp = openai.ChatCompletion.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "system", "content": prompt}],
-            stream=True,
-        )
-        for chunk in resp:
-            yield f"data: {json.dumps(chunk['choices'][0]['delta'])}\n\n"
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    
+    def event_generator():
+        try:
+            resp = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "You are a helpful AI product architect. Always return clear and structured product requirement documents."},
+                    {"role": "user", "content": user_query}
+                ],
+                stream=True,
+            )
+            for chunk in resp:
+                delta = chunk.choices[0].delta
+                if delta.get("content"):
+                    yield f"data: {json.dumps({'content': delta.content})}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+    
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+    }
+    return StreamingResponse(event_generator(), media_type="text/event-stream", headers=headers)
 
 # PRD validator endpoint
 @app.post("/prd/validate")
@@ -94,4 +156,6 @@ async def planner_listener():
         print("Planner trigger", msg.data.decode())
 
 
-asyncio.create_task(planner_listener())
+@app.on_event("startup")
+async def start_planner_listener():
+    asyncio.create_task(planner_listener())

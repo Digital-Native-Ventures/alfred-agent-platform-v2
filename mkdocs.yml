@@ -1,0 +1,6 @@
+site_name: Alfred Agent Docs
+repo_url: https://github.com/YOUR-ORG/alfred-agent-platform
+theme: material
+nav:
+  - Home: index.md
+  - Phase 8: phase-8.md

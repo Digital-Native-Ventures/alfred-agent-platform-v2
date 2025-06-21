@@ -77,7 +77,7 @@ services:
 
   # Message Queue for event-driven architecture
   pubsub-emulator:
-    image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
+# ⏯ disabled for local dev → # ⏯ disabled for local dev →    image: gcr.io/google.com/cloudsdktool/cloud-sdk:latest
     container_name: pubsub-emulator
     command: gcloud beta emulators pubsub start --host-port=0.0.0.0:8085 --project=alfred-agent-platform
     ports:
