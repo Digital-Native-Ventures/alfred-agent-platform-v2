@@ -1,0 +1,105 @@
+name: UI E2E Tests
+
+on:
+  pull_request:
+    paths:
+      - 'services/agent-orchestrator/**'
+      - 'scripts/smoke-ui.sh'
+      - '.github/workflows/ui-e2e.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'services/agent-orchestrator/**'
+
+jobs:
+  ui-e2e:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: services/agent-orchestrator/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install Python dependencies
+        run: |
+          cd services/architect-api
+          pip install -r requirements.txt
+
+      - name: Set environment variables
+        run: |
+          echo "PG_DSN=postgresql://postgres:postgres@localhost:5432/postgres" >> $GITHUB_ENV
+          echo "OPENAI_API_KEY=test-key" >> $GITHUB_ENV
+
+      - name: Start architect API
+        run: |
+          cd services/architect-api
+          uvicorn app.main:app --host 0.0.0.0 --port 8083 &
+          sleep 10
+
+      - name: Install UI dependencies
+        run: |
+          cd services/agent-orchestrator
+          npm ci
+
+      - name: Build UI
+        run: |
+          cd services/agent-orchestrator
+          npm run build
+
+      - name: Install Playwright browsers
+        run: |
+          cd services/agent-orchestrator
+          npx playwright install --with-deps
+
+      - name: Start UI server
+        run: |
+          cd services/agent-orchestrator
+          npx serve -s dist -l 8082 &
+          sleep 5
+
+      - name: Run E2E tests
+        run: |
+          cd services/agent-orchestrator
+          npm run test:e2e
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: services/agent-orchestrator/playwright-report/
+          retention-days: 30
