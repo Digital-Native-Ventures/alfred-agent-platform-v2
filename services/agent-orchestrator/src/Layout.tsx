@@ -1,17 +1,20 @@
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar  from "@/components/layout/Topbar";
 import { Outlet } from "react-router-dom";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 export default function Layout() {
   return (
-    <div className="flex h-screen font-display bg-neutral-50">
-      <Sidebar />
-      <main className="flex flex-col flex-1">
-        <Topbar />
-        <div className="flex-1 overflow-y-auto">
-          <Outlet />
-        </div>
-      </main>
-    </div>
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full font-display bg-neutral-50">
+        <Sidebar logoUrl="/lovable-uploads/4f5a01e8-7502-47aa-9bb4-567065f7d751.png" logoFallback="AP" />
+        <SidebarInset className="flex flex-col">
+          <Topbar />
+          <main className="flex-1 p-6">
+            <Outlet />
+          </main>
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 }
