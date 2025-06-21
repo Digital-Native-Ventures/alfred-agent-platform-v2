@@ -20,4 +20,9 @@ export default defineConfig(({ mode }) => ({
       "@shared": path.resolve(__dirname, "../shared"),
     },
   },
+  test: {
+    globals: true,
+    environment: 'happy-dom',
+    setupFiles: ['./src/test/setup.ts'],
+  },
 }));

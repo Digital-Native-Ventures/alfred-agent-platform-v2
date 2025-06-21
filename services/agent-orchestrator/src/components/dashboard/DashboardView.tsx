@@ -2,6 +2,7 @@ import { Grid, Users, AlertTriangle, ArrowDownToLine } from "lucide-react";
 import SummaryCard from "./SummaryCard";
 import ChartGrid from "./ChartGrid";
 import ActivityTimeline from "./ActivityTimeline";
+import QuickActions from "./QuickActions";
 import { FadeIn } from "../ui/animations/FadeIn";
 
 const DashboardView = () => {
@@ -61,10 +62,14 @@ const DashboardView = () => {
       </div>
 
       <FadeIn delay={500} direction="up">
-        <ChartGrid />
+        <QuickActions />
       </FadeIn>
 
       <FadeIn delay={600} direction="up">
+        <ChartGrid />
+      </FadeIn>
+
+      <FadeIn delay={700} direction="up">
         <ActivityTimeline />
       </FadeIn>
     </div>
