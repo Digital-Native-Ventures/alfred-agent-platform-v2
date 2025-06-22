@@ -1,0 +1,9 @@
+/* Test if any CSS loads */
+body {
+  background-color: lightblue !important;
+}
+
+h1 {
+  color: red !important;
+  font-size: 48px !important;
+}

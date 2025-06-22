@@ -62,10 +62,12 @@ class DiagnosticsBot:
         args = text.strip().split()
         if not args:
             return await self._send_help(channel)
-        
+
         subcommand = args[0]
         full_command = f"{command} {subcommand}"
-        logger.info("processing_command", command=full_command, channel=channel, user=user, args=args)
+        logger.info(
+            "processing_command", command=full_command, channel=channel, user=user, args=args
+        )
 
         handler = self.commands.get(full_command)
         if not handler:
@@ -239,7 +241,9 @@ class DiagnosticsBot:
             await self.slack_client.chat_postMessage(channel=channel, blocks=blocks),
         )
 
-    async def _handle_acknowledge_command(self, channel: str, user: str, alert_id: str = None) -> SlackResponse:
+    async def _handle_acknowledge_command(
+        self, channel: str, user: str, alert_id: str = None
+    ) -> SlackResponse:
         """Handle alert acknowledgment command"""
         if not alert_id:
             return cast(
@@ -290,7 +294,9 @@ class DiagnosticsBot:
             logger.error("acknowledge_error", alert_id=alert_id, error=str(e))
             raise
 
-    async def _handle_silence_command(self, channel: str, user: str, alert_id: str = None, duration: str = "1h") -> SlackResponse:
+    async def _handle_silence_command(
+        self, channel: str, user: str, alert_id: str = None, duration: str = "1h"
+    ) -> SlackResponse:
         """Handle alert silence command"""
         if not alert_id:
             return cast(
@@ -331,7 +337,9 @@ class DiagnosticsBot:
             logger.error("silence_error", alert_id=alert_id, error=str(e))
             raise
 
-    async def _handle_correlate_command(self, channel: str, user: str, alert_id: str = None) -> SlackResponse:
+    async def _handle_correlate_command(
+        self, channel: str, user: str, alert_id: str = None
+    ) -> SlackResponse:
         """Handle alert correlation command"""
         if not alert_id:
             return cast(
@@ -346,8 +354,18 @@ class DiagnosticsBot:
             # TODO: Implement actual correlation algorithm
             # For now, simulate related alerts
             related_alerts = [
-                {"id": f"{alert_id}_related_1", "service": "alfred-core", "severity": "warning", "correlation": "service"},
-                {"id": f"{alert_id}_related_2", "service": "model-router", "severity": "critical", "correlation": "temporal"},
+                {
+                    "id": f"{alert_id}_related_1",
+                    "service": "alfred-core",
+                    "severity": "warning",
+                    "correlation": "service",
+                },
+                {
+                    "id": f"{alert_id}_related_2",
+                    "service": "model-router",
+                    "severity": "critical",
+                    "correlation": "temporal",
+                },
             ]
 
             blocks = [
@@ -363,22 +381,24 @@ class DiagnosticsBot:
             for alert in related_alerts:
                 severity_emoji = "🔴" if alert["severity"] == "critical" else "🟡"
                 correlation_type = f"({alert['correlation']} correlation)"
-                
-                blocks.extend([
-                    {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": f"{severity_emoji} `{alert['id']}` - {alert['service']} {correlation_type}",
-                        },
-                        "accessory": {
-                            "type": "button",
-                            "text": {"type": "plain_text", "text": "Acknowledge"},
-                            "action_id": "ack_correlated",
-                            "value": alert["id"],
-                        },
-                    }
-                ])
+
+                blocks.extend(
+                    [
+                        {
+                            "type": "section",
+                            "text": {
+                                "type": "mrkdwn",
+                                "text": f"{severity_emoji} `{alert['id']}` - {alert['service']} {correlation_type}",
+                            },
+                            "accessory": {
+                                "type": "button",
+                                "text": {"type": "plain_text", "text": "Acknowledge"},
+                                "action_id": "ack_correlated",
+                                "value": alert["id"],
+                            },
+                        }
+                    ]
+                )
 
             # Add bulk action buttons
             action_elements = [
@@ -397,20 +417,24 @@ class DiagnosticsBot:
                     "style": "danger",
                 },
             ]
-            
+
             # Add PagerDuty escalation if available
             if self.pagerduty_bridge:
-                action_elements.append({
-                    "type": "button",
-                    "text": {"type": "plain_text", "text": "🚨 Escalate to PagerDuty"},
-                    "action_id": "escalate_to_pagerduty",
-                    "value": alert_id,
-                })
+                action_elements.append(
+                    {
+                        "type": "button",
+                        "text": {"type": "plain_text", "text": "🚨 Escalate to PagerDuty"},
+                        "action_id": "escalate_to_pagerduty",
+                        "value": alert_id,
+                    }
+                )
 
-            blocks.append({
-                "type": "actions",
-                "elements": action_elements,
-            })
+            blocks.append(
+                {
+                    "type": "actions",
+                    "elements": action_elements,
+                }
+            )
 
             return cast(
                 SlackResponse,
@@ -421,7 +445,9 @@ class DiagnosticsBot:
             logger.error("correlate_error", alert_id=alert_id, error=str(e))
             raise
 
-    async def handle_button_action(self, action_id: str, value: str, user: str, channel: str) -> Optional[SlackResponse]:
+    async def handle_button_action(
+        self, action_id: str, value: str, user: str, channel: str
+    ) -> Optional[SlackResponse]:
         """Handle button actions from interactive messages"""
         try:
             if action_id == "view_correlation":

@@ -1,9 +1,9 @@
 """PagerDuty integration for Alfred platform alerts"""
 
 import os
-from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Any, Dict, List, Optional
 
 import httpx
 import structlog
@@ -14,6 +14,7 @@ logger = structlog.get_logger()
 @dataclass
 class PagerDutyConfig:
     """PagerDuty integration configuration"""
+
     api_key: str
     integration_key: str
     base_url: str = "https://api.pagerduty.com"
@@ -23,6 +24,7 @@ class PagerDutyConfig:
 @dataclass
 class PagerDutyIncident:
     """PagerDuty incident representation"""
+
     id: str
     title: str
     status: str
@@ -52,13 +54,13 @@ class PagerDutyClient:
         details: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
         """Create a PagerDuty incident
-        
+
         Args:
             title: Incident title
             service_id: PagerDuty service ID
             urgency: Incident urgency (high/low)
             details: Additional incident details
-            
+
         Returns:
             Incident ID if successful, None otherwise
         """
@@ -80,7 +82,7 @@ class PagerDutyClient:
                     headers=self.headers,
                 )
                 response.raise_for_status()
-                
+
                 data = response.json()
                 incident_id = data["incident"]["id"]
                 logger.info("pagerduty_incident_created", incident_id=incident_id, title=title)
@@ -92,11 +94,11 @@ class PagerDutyClient:
 
     async def acknowledge_incident(self, incident_id: str, user_email: str) -> bool:
         """Acknowledge a PagerDuty incident
-        
+
         Args:
             incident_id: PagerDuty incident ID
             user_email: Email of acknowledging user
-            
+
         Returns:
             True if successful, False otherwise
         """
@@ -120,8 +122,10 @@ class PagerDutyClient:
                     headers=headers,
                 )
                 response.raise_for_status()
-                
-                logger.info("pagerduty_incident_acknowledged", incident_id=incident_id, user=user_email)
+
+                logger.info(
+                    "pagerduty_incident_acknowledged", incident_id=incident_id, user=user_email
+                )
                 return True
 
         except Exception as e:
@@ -130,11 +134,11 @@ class PagerDutyClient:
 
     async def resolve_incident(self, incident_id: str, user_email: str) -> bool:
         """Resolve a PagerDuty incident
-        
+
         Args:
             incident_id: PagerDuty incident ID
             user_email: Email of resolving user
-            
+
         Returns:
             True if successful, False otherwise
         """
@@ -158,7 +162,7 @@ class PagerDutyClient:
                     headers=headers,
                 )
                 response.raise_for_status()
-                
+
                 logger.info("pagerduty_incident_resolved", incident_id=incident_id, user=user_email)
                 return True
 
@@ -167,18 +171,18 @@ class PagerDutyClient:
             return False
 
     async def get_incidents(
-        self, 
+        self,
         statuses: Optional[List[str]] = None,
         service_ids: Optional[List[str]] = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> List[PagerDutyIncident]:
         """Get PagerDuty incidents
-        
+
         Args:
             statuses: Filter by incident statuses
             service_ids: Filter by service IDs
             limit: Maximum number of incidents to return
-            
+
         Returns:
             List of PagerDuty incidents
         """
@@ -196,23 +200,27 @@ class PagerDutyClient:
                     headers=self.headers,
                 )
                 response.raise_for_status()
-                
+
                 data = response.json()
                 incidents = []
-                
+
                 for incident_data in data.get("incidents", []):
                     incident = PagerDutyIncident(
                         id=incident_data["id"],
                         title=incident_data["title"],
                         status=incident_data["status"],
                         urgency=incident_data["urgency"],
-                        created_at=datetime.fromisoformat(incident_data["created_at"].replace("Z", "+00:00")),
+                        created_at=datetime.fromisoformat(
+                            incident_data["created_at"].replace("Z", "+00:00")
+                        ),
                         service_name=incident_data["service"]["summary"],
-                        assigned_user=incident_data.get("assignments", [{}])[0].get("assignee", {}).get("summary"),
+                        assigned_user=incident_data.get("assignments", [{}])[0]
+                        .get("assignee", {})
+                        .get("summary"),
                         escalation_policy=incident_data.get("escalation_policy", {}).get("summary"),
                     )
                     incidents.append(incident)
-                
+
                 logger.info("pagerduty_incidents_retrieved", count=len(incidents))
                 return incidents
 
@@ -226,7 +234,7 @@ class PagerDutyAlertBridge:
 
     def __init__(self, client: PagerDutyClient, service_mapping: Dict[str, str]):
         """Initialize PagerDuty alert bridge
-        
+
         Args:
             client: PagerDuty client instance
             service_mapping: Mapping of Alfred services to PagerDuty service IDs
@@ -235,22 +243,22 @@ class PagerDutyAlertBridge:
         self.service_mapping = service_mapping
 
     async def escalate_alert(
-        self, 
-        alert_id: str, 
-        service: str, 
-        title: str, 
+        self,
+        alert_id: str,
+        service: str,
+        title: str,
         severity: str,
-        details: Optional[Dict[str, Any]] = None
+        details: Optional[Dict[str, Any]] = None,
     ) -> Optional[str]:
         """Escalate Alfred alert to PagerDuty
-        
+
         Args:
             alert_id: Alfred alert ID
             service: Alfred service name
             title: Alert title
             severity: Alert severity
             details: Additional alert details
-            
+
         Returns:
             PagerDuty incident ID if successful, None otherwise
         """
@@ -264,11 +272,11 @@ class PagerDutyAlertBridge:
             "alfred_alert_id": alert_id,
             "alfred_service": service,
             "severity": severity,
-            **(details or {})
+            **(details or {}),
         }
 
         incident_title = f"[Alfred] {title}"
-        
+
         return await self.client.create_incident(
             title=incident_title,
             service_id=pagerduty_service_id,
@@ -278,23 +286,22 @@ class PagerDutyAlertBridge:
 
     async def sync_alert_status(self, alert_id: str, status: str, user_email: str) -> bool:
         """Sync Alfred alert status to PagerDuty
-        
+
         Args:
             alert_id: Alfred alert ID
             status: New alert status (acknowledged/resolved)
             user_email: User performing the action
-            
+
         Returns:
             True if successful, False otherwise
         """
         # TODO: Implement mapping between Alfred alert IDs and PagerDuty incident IDs
         # This would require storing the mapping when incidents are created
-        
-        logger.info("pagerduty_status_sync_requested",
-                    alert_id=alert_id,
-                    status=status,
-                    user=user_email)
-        
+
+        logger.info(
+            "pagerduty_status_sync_requested", alert_id=alert_id, status=status, user=user_email
+        )
+
         # For now, return True as this is a placeholder implementation
         return True
 
@@ -303,16 +310,16 @@ def create_pagerduty_client() -> Optional[PagerDutyClient]:
     """Create PagerDuty client from environment variables"""
     api_key = os.getenv("PAGERDUTY_API_KEY")
     integration_key = os.getenv("PAGERDUTY_INTEGRATION_KEY")
-    
+
     if not api_key or not integration_key:
         logger.warning("pagerduty_credentials_missing")
         return None
-    
+
     config = PagerDutyConfig(
         api_key=api_key,
         integration_key=integration_key,
     )
-    
+
     return PagerDutyClient(config)
 
 
@@ -321,7 +328,7 @@ def create_alert_bridge() -> Optional[PagerDutyAlertBridge]:
     client = create_pagerduty_client()
     if not client:
         return None
-    
+
     # Default service mapping - should be configured per deployment
     service_mapping = {
         "alfred-core": os.getenv("PAGERDUTY_SERVICE_ALFRED_CORE", ""),
@@ -330,12 +337,12 @@ def create_alert_bridge() -> Optional[PagerDutyAlertBridge]:
         "mission-control": os.getenv("PAGERDUTY_SERVICE_MISSION_CONTROL", ""),
         "social-intel": os.getenv("PAGERDUTY_SERVICE_SOCIAL_INTEL", ""),
     }
-    
+
     # Filter out empty mappings
     service_mapping = {k: v for k, v in service_mapping.items() if v}
-    
+
     if not service_mapping:
         logger.warning("pagerduty_no_service_mappings")
         return None
-    
+
     return PagerDutyAlertBridge(client, service_mapping)

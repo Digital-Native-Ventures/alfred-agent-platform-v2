@@ -14,3 +14,11 @@ Large logs/live feeds go into `docs/logbook/`.
 ## Next Integration tasks (CLI)
 - [ ] Connect Overview stats to /healthz
 - [ ] Wire ChatPage ↔ /chat
+
+### Shell MVP Checklist
+- [x] Collapsible sidebar
+- [x] Active-route highlight
+- [x] Topbar service bulbs
+- [x] Routing wired (overview, projects, plan, chat)
+- [x] Playwright smoke test
+
