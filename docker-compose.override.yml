@@ -1,4 +1,0 @@
-services:
-  pubsub-emulator:
-    deploy:
-      replicas: 0

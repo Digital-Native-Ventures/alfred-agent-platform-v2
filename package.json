@@ -2,5 +2,12 @@
   "dependencies": {
     "playwright": "^1.52.0",
     "ttys": "^0.0.3"
+  },
+  "devDependencies": {
+    "cmdk": "^1.1.1",
+    "lucide-react": "^0.522.0",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.6.2",
+    "remark-gfm": "^4.0.1"
   }
 }

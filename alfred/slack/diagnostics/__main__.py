@@ -42,6 +42,26 @@ async def main() -> None:
         except Exception as e:
             logger.error(f"Error handling command: {e}")
 
+    # Register button action handlers
+    @app.action("view_correlation")
+    @app.action("ack_correlated")
+    @app.action("silence_related")
+    @app.action("ack_all_correlated")
+    @app.action("silence_all_correlated")
+    @app.action("escalate_to_pagerduty")
+    async def handle_button_actions(ack: Any, body: Any, logger: Any) -> None:
+        await ack()
+        try:
+            action = body["actions"][0]
+            await bot.handle_button_action(
+                action_id=action["action_id"],
+                value=action["value"],
+                user=body["user"]["id"],
+                channel=body["channel"]["id"],
+            )
+        except Exception as e:
+            logger.error(f"Error handling button action: {e}")
+
     # Socket mode setup if enabled
     if os.environ.get("SOCKET_MODE_ENABLED", "true").lower() == "true":
         handler = AsyncSocketModeHandler(

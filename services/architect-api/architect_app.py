@@ -13,7 +13,15 @@ from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from nats.aio.client import Client as NATS
 from pydantic import BaseModel
 from routers import memory
-from app.routers import plan
+
+try:
+    from app.routers import plan
+except ImportError:
+    # Fallback for local import
+    import os
+    import sys
+    sys.path.append(os.path.join(os.path.dirname(__file__), 'app'))
+    from routers import plan
 
 # Simple prompt builder function
 def build_prompt(system_snips, user_query):
@@ -26,7 +34,7 @@ REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
-app = FastAPI()
+app = FastAPI(title="Alfred Architect API")
 
 # Include routers
 app.include_router(memory.router)

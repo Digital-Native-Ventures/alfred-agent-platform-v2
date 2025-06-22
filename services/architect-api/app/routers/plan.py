@@ -1,7 +1,9 @@
-from fastapi import APIRouter, HTTPException
 from pathlib import Path
 
+from fastapi import APIRouter, HTTPException
+
 router = APIRouter(prefix="/plan", tags=["plan"])
+
 
 @router.get("/{phase}")
 def get_plan(phase: str):

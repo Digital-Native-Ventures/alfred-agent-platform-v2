@@ -4,16 +4,35 @@ import os
 from datetime import datetime
 from typing import Dict, List
 
+import asyncpg
 import openai
 import psycopg2
-import asyncpg
 import redis
 from fastapi import Body, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from nats.aio.client import Client as NATS
 from pydantic import BaseModel
-from app.routers import memory, project_sync, reflect, control, next_prd, report, auto_prd, suggested_prds, memory_update, memory_metrics, memory_archive, memory_archived, memory_revival, memory_status_metrics, admin_export, plan
+
+from app.routers import (
+    admin_export,
+    auto_prd,
+    control,
+    memory,
+    memory_archive,
+    memory_archived,
+    memory_metrics,
+    memory_revival,
+    memory_status_metrics,
+    memory_update,
+    next_prd,
+    plan,
+    project_sync,
+    reflect,
+    report,
+    suggested_prds,
+)
+
 
 # Simple prompt builder function
 def build_prompt(system_snips, user_query):
