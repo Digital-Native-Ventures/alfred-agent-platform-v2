@@ -1,12 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./Layout";
-import Home from "./pages/Home";
-import ChatPage from "./pages/ChatPage";
-import PlanPage from "./pages/PlanPage";
-import Alerts from "./pages/Alerts";
 import Overview from "./pages/Overview";
 import Projects from "./pages/Projects";
-import ProjectPlan from "./pages/ProjectPlan";
+import Chat from "./pages/Chat";
 
 export default function App() {
   return (
@@ -16,10 +12,7 @@ export default function App() {
           <Route path="/" element={<Navigate to="/overview" replace />} />
           <Route path="/overview" element={<Overview />} />
           <Route path="/projects" element={<Projects />} />
-          <Route path="/projects/:id/plan" element={<ProjectPlan />} />
-          <Route path="/chat" element={<ChatPage />} />
-          <Route path="/plan/:id" element={<PlanPage />} />
-          <Route path="/alerts" element={<Alerts />} />
+          <Route path="/chat" element={<Chat />} />
         </Route>
       </Routes>
     </BrowserRouter>

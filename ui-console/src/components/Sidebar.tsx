@@ -1,143 +1,44 @@
+import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { Home, Folder, MessageSquare } from "lucide-react";
 
-import { Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
-import {
-  Activity,
-  BarChart2,
-  Settings,
-  Users,
-  MessageSquare,
-  Home,
-  FileText,
-  Layers,
-  YoutubeIcon
-} from "lucide-react";
+const links = [
+  { to: "/overview", label: "Overview", icon: Home },
+  { to: "/projects", label: "Projects", icon: Folder },
+  { to: "/chat", label: "Chat", icon: MessageSquare },
+];
 
-import {
-  Sidebar as SidebarComponent,
-  SidebarContent,
-  SidebarFooter,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  useSidebar
-} from "@/components/ui/sidebar";
-
-// Import the Avatar component
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-
-interface SidebarProps {
-  logoUrl?: string;
-  logoFallback?: string;
-}
-
-const Sidebar = ({ logoUrl = "/lovable-uploads/4f5a01e8-7502-47aa-9bb4-567065f7d751.png", logoFallback = "AP" }: SidebarProps) => {
-  const location = useLocation();
-  const { setOpen } = useSidebar();
-
-  const isActive = (path: string) => {
-    return location.pathname === path;
-  };
-
-  const handleMenuItemClick = () => {
-    setOpen(true);
-  };
-
-  const navItems = [
-    {
-      path: "/overview",
-      label: "Overview",
-      icon: Home
-    },
-    {
-      path: "/projects",
-      label: "Projects",
-      icon: FileText
-    },
-    {
-      path: "/agents",
-      label: "Agents",
-      icon: Users
-    },
-    {
-      path: "/chat",
-      label: "Architect Chat",
-      icon: MessageSquare
-    },
-    {
-      path: "/analytics",
-      label: "Analytics",
-      icon: BarChart2
-    },
-    {
-      path: "/reports",
-      label: "Reports",
-      icon: FileText
-    },
-    {
-      path: "/plan/8",
-      label: "Phase 8 Plan",
-      icon: FileText
-    },
-    {
-      path: "/taxonomy-settings",
-      label: "Taxonomy & Costs",
-      icon: Layers
-    },
-    {
-      path: "/youtube-test",
-      label: "YouTube API Test",
-      icon: YoutubeIcon
-    },
-    {
-      path: "/settings",
-      label: "Settings",
-      icon: Settings
-    },
-  ];
+export default function Sidebar() {
+  const { pathname } = useLocation();
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <SidebarComponent side="left" variant="sidebar" collapsible="icon">
-      <SidebarContent className="pt-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link to="/overview" aria-label="Alfred Dashboard" className="flex items-center justify-center w-full">
-              <Avatar className="w-10 h-10">
-                <AvatarImage src={logoUrl} alt="Alfred" />
-                <AvatarFallback className="bg-primary text-white font-bold">{logoFallback}</AvatarFallback>
-              </Avatar>
-            </Link>
-          </SidebarMenuItem>
-
-          {navItems.map((item) => (
-            <SidebarMenuItem key={item.path}>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive(item.path)}
-                tooltip={item.label}
-              >
-                <Link to={item.path} onClick={handleMenuItemClick}>
-                  <item.icon />
-                  <span>{item.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-
-      <SidebarFooter className="mt-auto pb-4">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton tooltip="Activity" onClick={handleMenuItemClick}>
-              <Activity className="h-5 w-5" />
-              <span>Activity</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
-    </SidebarComponent>
+    <aside
+      className={`h-full bg-slate-900 text-white transition-all ${
+        collapsed ? "w-14" : "w-56"
+      }`}
+    >
+      <button
+        className="p-2 w-full text-left hover:bg-slate-800"
+        onClick={() => setCollapsed(!collapsed)}
+      >
+        {collapsed ? "»" : "«"} Menu
+      </button>
+      <nav className="mt-4 space-y-1">
+        {links.map(({ to, label, icon: Icon }) => (
+          <Link
+            key={to}
+            to={to}
+            className={`flex items-center gap-3 px-4 py-2 hover:bg-slate-800 ${
+              pathname.startsWith(to) ? "bg-slate-800" : ""
+            }`}
+            title={collapsed ? label : undefined}
+          >
+            <Icon size={18} />
+            {!collapsed && <span>{label}</span>}
+          </Link>
+        ))}
+      </nav>
+    </aside>
   );
-};
-
-export default Sidebar;
+}
