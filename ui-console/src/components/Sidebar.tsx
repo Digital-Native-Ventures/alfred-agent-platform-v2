@@ -6,7 +6,6 @@ const links = [
   { to: "/overview", label: "Overview", icon: Home },
   { to: "/projects", label: "Projects", icon: Folder },
   { to: "/chat", label: "Chat", icon: MessageSquare },
-  { to: "/architect", label: "Architect", icon: Cpu },
 ];
 
 export default function Sidebar() {
