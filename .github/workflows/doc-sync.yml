@@ -1,0 +1,44 @@
+name: Sync Architecture Guide
+
+on:
+  schedule:
+    - cron: "0 * * * *"       # hourly
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pull latest canvas doc via ChatGPT API
+      - name: Download canvas doc
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          curl -s -H "Authorization: Bearer $OPENAI_API_KEY" \
+               -H "Content-Type: application/json" \
+               -d '{"textdoc_id":"6858802ef9c48191b3228ade8e4c7174"}' \
+               https://api.openai.com/v1/canmore/get_textdoc \
+               | jq -r '.content' \
+               > docs/technical-architecture-guide.md
+
+      # Commit back to repo if the file changed
+      - name: Commit updated guide
+        run: |
+          git config user.email "bot@alfred"
+          git config user.name  "Doc-Sync Bot"
+          git add docs/technical-architecture-guide.md
+          git diff --cached --quiet || git commit -m "docs: sync architecture guide"
+      - uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      # (Optional) embed into pgvector
+      - name: Embed into memory
+        if: env.PGVECTOR_URL != ''
+        env:
+          PGVECTOR_URL: ${{ secrets.PGVECTOR_URL }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          python scripts/embed_doc.py docs/technical-architecture-guide.md
