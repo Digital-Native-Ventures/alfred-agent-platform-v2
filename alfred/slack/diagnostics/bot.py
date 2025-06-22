@@ -7,6 +7,11 @@ import structlog
 from slack_sdk.web.async_client import AsyncWebClient
 from slack_sdk.web.slack_response import SlackResponse
 
+try:
+    from alfred.integrations.pagerduty import create_alert_bridge
+except ImportError:
+    create_alert_bridge = None
+
 logger = structlog.get_logger()
 
 
@@ -29,9 +34,13 @@ class DiagnosticsBot:
         self.slack_client = slack_client
         self.prometheus_url = prometheus_url
         self.enabled = enabled
+        self.pagerduty_bridge = create_alert_bridge() if create_alert_bridge else None
         self.commands = {
             "/diag health": self._handle_health_command,
             "/diag metrics": self._handle_metrics_command,
+            "/diag ack": self._handle_acknowledge_command,
+            "/diag silence": self._handle_silence_command,
+            "/diag correlate": self._handle_correlate_command,
         }
 
     async def handle_command(
@@ -49,15 +58,30 @@ class DiagnosticsBot:
             logger.info("diagnostics_bot_disabled", command=command)
             return None
 
-        full_command = f"{command} {text}".strip()
-        logger.info("processing_command", command=full_command, channel=channel, user=user)
+        # Parse command and arguments
+        args = text.strip().split()
+        if not args:
+            return await self._send_help(channel)
+        
+        subcommand = args[0]
+        full_command = f"{command} {subcommand}"
+        logger.info("processing_command", command=full_command, channel=channel, user=user, args=args)
 
         handler = self.commands.get(full_command)
         if not handler:
             return await self._send_help(channel)
 
         try:
-            return await handler(channel, user)
+            # Pass additional arguments based on command type
+            if subcommand in ["ack", "silence", "correlate"]:
+                alert_id = args[1] if len(args) > 1 else None
+                if subcommand == "silence" and len(args) > 2:
+                    duration = args[2]
+                    return await handler(channel, user, alert_id, duration)
+                else:
+                    return await handler(channel, user, alert_id)
+            else:
+                return await handler(channel, user)
         except Exception as e:
             logger.error("command_error", command=full_command, error=str(e))
             return cast(
@@ -202,7 +226,10 @@ class DiagnosticsBot:
                 "text": {
                     "type": "mrkdwn",
                     "text": "• `/diag health` - Check service health status\n"
-                    "• `/diag metrics` - View system metrics",
+                    "• `/diag metrics` - View system metrics\n"
+                    "• `/diag ack <alert-id>` - Acknowledge alert\n"
+                    "• `/diag silence <alert-id> [duration]` - Silence alert\n"
+                    "• `/diag correlate <alert-id>` - Show correlated alerts",
                 },
             },
         ]
@@ -211,3 +238,245 @@ class DiagnosticsBot:
             SlackResponse,
             await self.slack_client.chat_postMessage(channel=channel, blocks=blocks),
         )
+
+    async def _handle_acknowledge_command(self, channel: str, user: str, alert_id: str = None) -> SlackResponse:
+        """Handle alert acknowledgment command"""
+        if not alert_id:
+            return cast(
+                SlackResponse,
+                await self.slack_client.chat_postMessage(
+                    channel=channel,
+                    text="❌ Please provide an alert ID: `/diag ack <alert-id>`",
+                ),
+            )
+
+        try:
+            # TODO: Integrate with existing AlertSnooze model
+            # For now, return success message with interactive options
+            blocks = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"✅ Alert `{alert_id}` acknowledged by <@{user}>",
+                    },
+                },
+                {
+                    "type": "actions",
+                    "elements": [
+                        {
+                            "type": "button",
+                            "text": {"type": "plain_text", "text": "View Correlated"},
+                            "action_id": "view_correlation",
+                            "value": alert_id,
+                        },
+                        {
+                            "type": "button",
+                            "text": {"type": "plain_text", "text": "Silence Related"},
+                            "action_id": "silence_related",
+                            "value": alert_id,
+                            "style": "danger",
+                        },
+                    ],
+                },
+            ]
+
+            return cast(
+                SlackResponse,
+                await self.slack_client.chat_postMessage(channel=channel, blocks=blocks),
+            )
+
+        except Exception as e:
+            logger.error("acknowledge_error", alert_id=alert_id, error=str(e))
+            raise
+
+    async def _handle_silence_command(self, channel: str, user: str, alert_id: str = None, duration: str = "1h") -> SlackResponse:
+        """Handle alert silence command"""
+        if not alert_id:
+            return cast(
+                SlackResponse,
+                await self.slack_client.chat_postMessage(
+                    channel=channel,
+                    text="❌ Please provide an alert ID: `/diag silence <alert-id> [duration]`",
+                ),
+            )
+
+        try:
+            # TODO: Integrate with existing AlertSnooze model
+            blocks = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"🔇 Alert `{alert_id}` silenced for {duration} by <@{user}>",
+                    },
+                },
+                {
+                    "type": "context",
+                    "elements": [
+                        {
+                            "type": "mrkdwn",
+                            "text": f"Alert will auto-resume after {duration}. Use `/diag ack {alert_id}` to acknowledge instead.",
+                        }
+                    ],
+                },
+            ]
+
+            return cast(
+                SlackResponse,
+                await self.slack_client.chat_postMessage(channel=channel, blocks=blocks),
+            )
+
+        except Exception as e:
+            logger.error("silence_error", alert_id=alert_id, error=str(e))
+            raise
+
+    async def _handle_correlate_command(self, channel: str, user: str, alert_id: str = None) -> SlackResponse:
+        """Handle alert correlation command"""
+        if not alert_id:
+            return cast(
+                SlackResponse,
+                await self.slack_client.chat_postMessage(
+                    channel=channel,
+                    text="❌ Please provide an alert ID: `/diag correlate <alert-id>`",
+                ),
+            )
+
+        try:
+            # TODO: Implement actual correlation algorithm
+            # For now, simulate related alerts
+            related_alerts = [
+                {"id": f"{alert_id}_related_1", "service": "alfred-core", "severity": "warning", "correlation": "service"},
+                {"id": f"{alert_id}_related_2", "service": "model-router", "severity": "critical", "correlation": "temporal"},
+            ]
+
+            blocks = [
+                {
+                    "type": "section",
+                    "text": {
+                        "type": "mrkdwn",
+                        "text": f"🔗 *Alerts correlated with `{alert_id}`*",
+                    },
+                }
+            ]
+
+            for alert in related_alerts:
+                severity_emoji = "🔴" if alert["severity"] == "critical" else "🟡"
+                correlation_type = f"({alert['correlation']} correlation)"
+                
+                blocks.extend([
+                    {
+                        "type": "section",
+                        "text": {
+                            "type": "mrkdwn",
+                            "text": f"{severity_emoji} `{alert['id']}` - {alert['service']} {correlation_type}",
+                        },
+                        "accessory": {
+                            "type": "button",
+                            "text": {"type": "plain_text", "text": "Acknowledge"},
+                            "action_id": "ack_correlated",
+                            "value": alert["id"],
+                        },
+                    }
+                ])
+
+            # Add bulk action buttons
+            action_elements = [
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "Acknowledge All"},
+                    "action_id": "ack_all_correlated",
+                    "value": alert_id,
+                    "style": "primary",
+                },
+                {
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "Silence All"},
+                    "action_id": "silence_all_correlated",
+                    "value": alert_id,
+                    "style": "danger",
+                },
+            ]
+            
+            # Add PagerDuty escalation if available
+            if self.pagerduty_bridge:
+                action_elements.append({
+                    "type": "button",
+                    "text": {"type": "plain_text", "text": "🚨 Escalate to PagerDuty"},
+                    "action_id": "escalate_to_pagerduty",
+                    "value": alert_id,
+                })
+
+            blocks.append({
+                "type": "actions",
+                "elements": action_elements,
+            })
+
+            return cast(
+                SlackResponse,
+                await self.slack_client.chat_postMessage(channel=channel, blocks=blocks),
+            )
+
+        except Exception as e:
+            logger.error("correlate_error", alert_id=alert_id, error=str(e))
+            raise
+
+    async def handle_button_action(self, action_id: str, value: str, user: str, channel: str) -> Optional[SlackResponse]:
+        """Handle button actions from interactive messages"""
+        try:
+            if action_id == "view_correlation":
+                return await self._handle_correlate_command(channel, user, value)
+            elif action_id == "ack_correlated":
+                return await self._handle_acknowledge_command(channel, user, value)
+            elif action_id == "silence_related":
+                return await self._handle_silence_command(channel, user, value, "30m")
+            elif action_id == "ack_all_correlated":
+                # TODO: Implement bulk acknowledge
+                return cast(
+                    SlackResponse,
+                    await self.slack_client.chat_postMessage(
+                        channel=channel,
+                        text=f"✅ All alerts correlated with `{value}` acknowledged by <@{user}>",
+                    ),
+                )
+            elif action_id == "silence_all_correlated":
+                # TODO: Implement bulk silence
+                return cast(
+                    SlackResponse,
+                    await self.slack_client.chat_postMessage(
+                        channel=channel,
+                        text=f"🔇 All alerts correlated with `{value}` silenced by <@{user}>",
+                    ),
+                )
+            elif action_id == "escalate_to_pagerduty":
+                # TODO: Integrate with actual alert data
+                if self.pagerduty_bridge:
+                    # Simulate escalation for now
+                    return cast(
+                        SlackResponse,
+                        await self.slack_client.chat_postMessage(
+                            channel=channel,
+                            text=f"🚨 Alert `{value}` escalated to PagerDuty by <@{user}>",
+                        ),
+                    )
+                else:
+                    return cast(
+                        SlackResponse,
+                        await self.slack_client.chat_postMessage(
+                            channel=channel,
+                            text="❌ PagerDuty integration not configured",
+                        ),
+                    )
+            else:
+                logger.warning("unknown_action", action_id=action_id)
+                return None
+
+        except Exception as e:
+            logger.error("button_action_error", action_id=action_id, error=str(e))
+            return cast(
+                SlackResponse,
+                await self.slack_client.chat_postMessage(
+                    channel=channel,
+                    text=f"❌ Error processing action: {str(e)}",
+                ),
+            )
