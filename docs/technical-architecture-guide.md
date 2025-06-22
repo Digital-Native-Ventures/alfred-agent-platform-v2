@@ -162,3 +162,70 @@ PGVECTOR_URL=your_postgres_connection       # For vector embedding (optional)
 - `PGVECTOR_URL`: For memory embedding (optional)
 
 This automated sync ensures the architecture guide stays current across all platforms while maintaining Canvas as the authoritative source for architectural decisions.
+
+---
+
+## 🚀 Bootstrapping New Sessions
+
+### 🤖 **ChatGPT (Web/Desktop)**
+```
+Open the Canvas document directly:
+Canvas Document ID: 6858802ef9c48191b3228ade8e4c7174
+
+Or paste this prompt:
+"Load the technical architecture guide for Alfred Agent Platform. I need to reference the current system design, microservices architecture, and data flow patterns. Please pull up the latest version from our Canvas document ID 6858802ef9c48191b3228ade8e4c7174."
+```
+
+### 🖥️ **Claude CLI**
+```bash
+# Read the current architecture guide
+claude read docs/technical-architecture-guide.md
+
+# Or start a new session with architecture context
+claude --context docs/technical-architecture-guide.md "Help me understand the current system architecture"
+
+# Load and discuss specific section
+claude read docs/technical-architecture-guide.md | claude "Explain the data flow section"
+```
+
+### 🎯 **Claude Desktop**
+```
+1. Open Claude Desktop
+2. Upload/reference the local file:
+   `/docs/technical-architecture-guide.md`
+
+Or use this prompt:
+"I'm working on the Alfred Agent Platform. Please reference our technical architecture guide located at docs/technical-architecture-guide.md. I need context on our microservices design, API structure, and data flow patterns."
+```
+
+### 🌐 **Live API Context**
+```bash
+# Fetch current guide via API and use with any AI tool
+curl -s http://localhost:3000/api/docs/architecture > /tmp/architecture.md
+
+# Then reference in any session:
+"Here's our current technical architecture guide: [paste content]"
+```
+
+### 📱 **Mobile/Quick Reference**
+```
+Direct GitHub link:
+https://raw.githubusercontent.com/Digital-Native-Ventures/alfred-agent-platform-v2/auto/doc-sync/docs/technical-architecture-guide.md
+
+Canvas URL: [Access via ChatGPT Canvas with document ID: 6858802ef9c48191b3228ade8e4c7174]
+```
+
+### 🔄 **Session Continuity Commands**
+```bash
+# Verify you have latest version before starting
+git pull origin auto/doc-sync
+claude read docs/technical-architecture-guide.md
+
+# Check if API serves current version
+curl -sf http://localhost:3000/api/docs/architecture | head -n 5
+
+# Manual sync if needed
+gh workflow run doc-sync.yml -F branch=main
+```
+
+**Pro Tip**: The architecture guide is automatically embedded in the AI memory system, so once loaded, subsequent questions about the architecture will have context without re-loading the full document.
