@@ -23,7 +23,7 @@ export function useArchitectChat() {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      // Set up SSE connection first
+      // Use GET endpoint for EventSource (SSE only supports GET)
       eventSourceRef.current = new EventSource(`${endpoint}/stream`);
       
       eventSourceRef.current.onmessage = (event) => {
@@ -64,21 +64,6 @@ export function useArchitectChat() {
         });
       };
 
-      // Send message to backend after setting up SSE
-      const response = await fetch(`${endpoint}/stream`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
     } catch (error) {
       console.error("Failed to send message:", error);
       setIsStreaming(false);

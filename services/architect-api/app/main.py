@@ -14,24 +14,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from nats.aio.client import Client as NATS
 from pydantic import BaseModel
 
-from app.routers import (
-    admin_export,
-    auto_prd,
-    control,
-    memory,
-    memory_archive,
-    memory_archived,
-    memory_metrics,
-    memory_revival,
-    memory_status_metrics,
-    memory_update,
-    next_prd,
-    plan,
-    project_sync,
-    reflect,
-    report,
-    suggested_prds,
-)
+from app.routers import plan, chat
 
 
 # Simple prompt builder function
@@ -48,23 +31,26 @@ openai.api_key = OPENAI_API_KEY
 
 app = FastAPI()
 
-# Include memory router
-app.include_router(memory.router)
-app.include_router(project_sync.router)
-app.include_router(reflect.router)
-app.include_router(control.router)
-app.include_router(next_prd.router)
-app.include_router(report.router)
-app.include_router(auto_prd.router)
-app.include_router(suggested_prds.router)
-app.include_router(memory_update.router)
-app.include_router(memory_metrics.router)
-app.include_router(memory_archive.router)
-app.include_router(memory_archived.router)
-app.include_router(memory_revival.router)
-app.include_router(memory_status_metrics.router)
-app.include_router(admin_export.router)
+# Include available routers
 app.include_router(plan.router)
+app.include_router(chat.router)
+
+# TODO: Enable these routers when implemented
+# app.include_router(memory.router)
+# app.include_router(project_sync.router)
+# app.include_router(reflect.router)
+# app.include_router(control.router)
+# app.include_router(next_prd.router)
+# app.include_router(report.router)
+# app.include_router(auto_prd.router)
+# app.include_router(suggested_prds.router)
+# app.include_router(memory_update.router)
+# app.include_router(memory_metrics.router)
+# app.include_router(memory_archive.router)
+# app.include_router(memory_archived.router)
+# app.include_router(memory_revival.router)
+# app.include_router(memory_status_metrics.router)
+# app.include_router(admin_export.router)
 
 # Add CORS middleware
 app.add_middleware(
