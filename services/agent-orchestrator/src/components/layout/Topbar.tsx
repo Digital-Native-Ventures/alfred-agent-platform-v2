@@ -13,6 +13,7 @@ import {
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import YouTubeResultsDialog from "@/components/ui/youtube-results-dialog";
+import ServiceHealth from "../ServiceHealth";
 
 const Topbar = () => {
   const { setOpen } = useSidebar();
@@ -37,6 +38,8 @@ const Topbar = () => {
       </div>
 
       <div className="flex items-center space-x-4">
+        <ServiceHealth />
+        
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="text-sm gap-1">

@@ -9,6 +9,9 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: { 
+        display: ["Inter", "sans-serif"] 
+      },
       boxShadow: {
         soft: "0 2px 15px -3px rgba(0, 0, 0, 0.07), 0 10px 20px -2px rgba(0, 0, 0, 0.04)",
       },
@@ -55,6 +58,11 @@ export default {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        brand: { 
+          50: "#f0f7ff",
+          500: "#3874ff",
+          700: "#1d4ed8" 
         },
         sidebar: "hsl(var(--sidebar))",
         "sidebar-foreground": "hsl(var(--sidebar-foreground))",

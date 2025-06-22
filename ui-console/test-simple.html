@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>UI Test</title>
+</head>
+<body>
+    <h1>Testing UI</h1>
+    <iframe src="http://localhost:3001" width="800" height="600" style="border: 1px solid #ccc;"></iframe>
+    <script>
+        setTimeout(() => {
+            const iframe = document.querySelector('iframe');
+            try {
+                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                const root = doc.getElementById('root');
+                console.log('Root element:', root);
+                console.log('Root content length:', root ? root.innerHTML.length : 0);
+                console.log('Root content:', root ? root.innerHTML.substring(0, 200) : 'Not found');
+            } catch(e) {
+                console.log('Cannot access iframe content due to CORS');
+            }
+        }, 5000);
+    </script>
+</body>
+</html>

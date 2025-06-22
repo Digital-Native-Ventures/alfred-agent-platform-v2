@@ -72,6 +72,11 @@ const Sidebar = ({ logoUrl = "/lovable-uploads/4f5a01e8-7502-47aa-9bb4-567065f7d
       icon: FileText
     },
     {
+      path: "/plan/8",
+      label: "Phase 8 Plan",
+      icon: FileText
+    },
+    {
       path: "/taxonomy-settings",
       label: "Taxonomy & Costs",
       icon: Layers

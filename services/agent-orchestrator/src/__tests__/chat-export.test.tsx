@@ -149,4 +149,78 @@ describe("ChatPane Export Functionality", () => {
       );
     });
   });
+
+  it("should send message using streaming API", async () => {
+    // Mock the streaming response
+    const mockReader = {
+      read: vi.fn()
+        .mockResolvedValueOnce({
+          done: false,
+          value: new TextEncoder().encode('data: {"content": "Hello"}\n\n')
+        })
+        .mockResolvedValueOnce({
+          done: false,
+          value: new TextEncoder().encode('data: {"content": " there!"}\n\n')
+        })
+        .mockResolvedValueOnce({
+          done: true,
+          value: undefined
+        })
+    };
+
+    const mockBody = {
+      getReader: vi.fn().mockReturnValue(mockReader)
+    };
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      body: mockBody,
+    });
+
+    render(<ChatPane />);
+    
+    // Type a message and send it
+    const input = screen.getByPlaceholderText("Type your message...");
+    const sendButton = screen.getByRole("button", { name: /send/i });
+    
+    fireEvent.change(input, { target: { value: "Test message" } });
+    fireEvent.click(sendButton);
+
+    // Wait for the API call
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        "http://localhost:8083/architect/complete",
+        expect.objectContaining({
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: expect.stringContaining("Test message"),
+        })
+      );
+    });
+
+    // Wait for the streaming response to be processed
+    await waitFor(() => {
+      expect(screen.getByText("Hello there!")).toBeInTheDocument();
+    });
+  });
+
+  it("should handle streaming API errors gracefully", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+    render(<ChatPane />);
+    
+    const input = screen.getByPlaceholderText("Type your message...");
+    const sendButton = screen.getByRole("button", { name: /send/i });
+    
+    fireEvent.change(input, { target: { value: "Test message" } });
+    fireEvent.click(sendButton);
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith({
+        title: "Error sending message",
+        description: "Error: Network error",
+        variant: "destructive",
+      });
+    });
+  });
 });

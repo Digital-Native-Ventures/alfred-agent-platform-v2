@@ -28,7 +28,7 @@ export function ChatPane() {
   async function exportChat() {
     try {
       // Use the NEXT_PUBLIC_ARCHITECT_URL environment variable
-      const architectUrl = import.meta.env.VITE_ARCHITECT_URL || "http://localhost:8083";
+      const architectUrl = "http://localhost:8083";
       
       const res = await fetch(`${architectUrl}/architect/export`, {
         method: "POST",
@@ -77,17 +77,71 @@ export function ChatPane() {
     setIsLoading(true);
 
     try {
-      // Mock assistant response for now
-      // In a real implementation, this would call the /architect/complete endpoint with SSE
-      setTimeout(() => {
-        const assistantMessage: Message = {
-          role: "assistant", 
-          content: `I received your message: "${userMessage.content}". This is a mock response. Full streaming chat will be implemented next.`,
-          timestamp: new Date().toISOString()
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsLoading(false);
-      }, 1000);
+      const architectUrl = "http://localhost:8083";
+      
+      // Create a placeholder assistant message that we'll update with streaming content
+      const assistantMessageId = Date.now();
+      const initialAssistantMessage: Message = {
+        role: "assistant",
+        content: "",
+        timestamp: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, initialAssistantMessage]);
+
+      // Make the streaming request to /architect/complete
+      const response = await fetch(`${architectUrl}/architect/complete`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query: userMessage.content,
+          context: [] // Add context if needed
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      // Handle Server-Sent Events streaming
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let assistantContent = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          const lines = chunk.split('\n');
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6));
+                if (data.content) {
+                  assistantContent += data.content;
+                  
+                  // Update the assistant message with the accumulated content
+                  setMessages(prev => prev.map((msg, index) => 
+                    index === prev.length - 1 && msg.role === "assistant"
+                      ? { ...msg, content: assistantContent }
+                      : msg
+                  ));
+                }
+              } catch (parseError) {
+                // Skip malformed JSON chunks
+                console.warn("Failed to parse SSE data:", parseError);
+              }
+            }
+          }
+        }
+      }
+
+      setIsLoading(false);
     } catch (e) {
       toast({
         title: "Error sending message",
@@ -95,6 +149,11 @@ export function ChatPane() {
         variant: "destructive"
       });
       setIsLoading(false);
+      
+      // Remove the failed assistant message if it was added
+      setMessages(prev => prev.filter(msg => 
+        !(msg.role === "assistant" && msg.content === "")
+      ));
     }
   }
 
