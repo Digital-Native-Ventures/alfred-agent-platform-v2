@@ -1,8 +1,10 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
+import datetime
+import os
 from typing import Optional
-import datetime, os
+
+from fastapi import FastAPI
 from openai import OpenAI
+from pydantic import BaseModel
 
 app = FastAPI()
 

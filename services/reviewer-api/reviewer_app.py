@@ -1,5 +1,7 @@
-import os, logging
+import logging
+import os
 from datetime import datetime
+
 from fastapi import FastAPI
 from github import Github
 

@@ -13,12 +13,13 @@ from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from nats.aio.client import Client as NATS
 from pydantic import BaseModel
 from routers import memory
+
 try:
     from app.routers import plan
 except ImportError:
     # Fallback for local import
-    import sys
     import os
+    import sys
     sys.path.append(os.path.join(os.path.dirname(__file__), 'app'))
     from routers import plan
 

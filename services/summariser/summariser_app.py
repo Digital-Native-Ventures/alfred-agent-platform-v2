@@ -1,5 +1,7 @@
-import os, logging
+import logging
+import os
 from datetime import datetime
+
 import aiocron
 from fastapi import FastAPI
 
