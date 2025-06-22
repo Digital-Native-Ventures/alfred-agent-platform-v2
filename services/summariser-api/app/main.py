@@ -10,10 +10,12 @@ app = FastAPI()
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+
 class PRSummaryRequest(BaseModel):
     pr_title: str
     pr_description: Optional[str] = ""
     merged_at: Optional[str] = str(datetime.datetime.utcnow())
+
 
 @app.post("/summarise")
 def summarise(req: PRSummaryRequest):
@@ -33,9 +35,7 @@ Return a one-line summary suitable for a project log.
         model="gpt-4",
         messages=[{"role": "system", "content": prompt}],
         temperature=0.5,
-        max_tokens=150
+        max_tokens=150,
     )
 
-    return {
-        "summary": result.choices[0].message.content.strip()
-    }
+    return {"summary": result.choices[0].message.content.strip()}

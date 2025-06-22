@@ -36,6 +36,7 @@ def fetch_costs(days=30):
 def health():
     return {"status": "ok"}
 
+
 @app.get("/costs")
 def costs():
     return fetch_costs()

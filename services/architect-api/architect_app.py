@@ -20,13 +20,16 @@ except ImportError:
     # Fallback for local import
     import os
     import sys
-    sys.path.append(os.path.join(os.path.dirname(__file__), 'app'))
+
+    sys.path.append(os.path.join(os.path.dirname(__file__), "app"))
     from routers import plan
+
 
 # Simple prompt builder function
 def build_prompt(system_snips, user_query):
     context = "\n".join(system_snips) if system_snips else ""
     return f"Context: {context}\n\nUser Query: {user_query}"
+
 
 PG_DSN = os.getenv("PG_DSN")
 NATS_URL = os.getenv("NATS_URL", "nats://nats:4222")
@@ -49,8 +52,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 class ChatRequest(BaseModel):
     message: str
+
 
 # Health route
 @app.get("/healthz")
@@ -61,6 +66,7 @@ def health():
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
+
 # Chat endpoint for direct OpenAI chat completion
 @app.post("/chat")
 async def chat(request: ChatRequest):
@@ -68,15 +74,19 @@ async def chat(request: ChatRequest):
         response = openai.ChatCompletion.create(
             model="gpt-4",
             messages=[
-                {"role": "system", "content": "You are a helpful AI product architect. Always return clear and structured product requirement documents."},
-                {"role": "user", "content": request.message}
+                {
+                    "role": "system",
+                    "content": "You are a helpful AI product architect. Always return clear and structured product requirement documents.",
+                },
+                {"role": "user", "content": request.message},
             ],
             temperature=0.7,
-            max_tokens=800
+            max_tokens=800,
         )
         return {"message": response["choices"][0]["message"]["content"]}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+
 
 # OPTIONS handler for CORS preflight
 @app.options("/architect/complete")
@@ -88,6 +98,7 @@ async def complete_options():
     }
     return JSONResponse(content={"message": "OK"}, headers=headers)
 
+
 # SSE chat completion
 @app.post("/architect/complete")
 async def complete(req: Request):
@@ -95,14 +106,17 @@ async def complete(req: Request):
     user_query = body.get("query", "")
     system_snips = body.get("context", [])
     prompt = build_prompt(system_snips, user_query)
-    
+
     def event_generator():
         try:
             resp = openai.ChatCompletion.create(
                 model="gpt-4o-mini",
                 messages=[
-                    {"role": "system", "content": "You are a helpful AI product architect. Always return clear and structured product requirement documents."},
-                    {"role": "user", "content": user_query}
+                    {
+                        "role": "system",
+                        "content": "You are a helpful AI product architect. Always return clear and structured product requirement documents.",
+                    },
+                    {"role": "user", "content": user_query},
                 ],
                 stream=True,
             )
@@ -112,13 +126,14 @@ async def complete(req: Request):
                     yield f"data: {json.dumps({'content': delta.content})}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
-    
+
     headers = {
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
     }
     return StreamingResponse(event_generator(), media_type="text/event-stream", headers=headers)
+
 
 # PRD validator endpoint
 @app.post("/prd/validate")
@@ -127,9 +142,11 @@ async def validate(prd: dict):
     missing = [k for k in required if k not in prd]
     return {"valid": not missing, "missing": missing}
 
+
 # ---------------------------------------------------------------------------
 # Chat Export Endpoint (Markdown)
 # ---------------------------------------------------------------------------
+
 
 def _messages_to_markdown(msgs: List[Dict]) -> str:
     md = ["# Architect Chat Export\n"]
@@ -138,6 +155,7 @@ def _messages_to_markdown(msgs: List[Dict]) -> str:
         content = m.get("content", "")
         md.append(f"## {role}\n\n{content}\n")
     return "\n".join(md)
+
 
 @app.post("/architect/export", response_class=PlainTextResponse)
 async def export_chat(body: Dict = Body(...)):
@@ -154,6 +172,7 @@ async def export_chat(body: Dict = Body(...)):
     """
     msgs = body.get("messages", [])
     return _messages_to_markdown(msgs)
+
 
 # Planner trigger coroutine (optional)
 async def planner_listener():

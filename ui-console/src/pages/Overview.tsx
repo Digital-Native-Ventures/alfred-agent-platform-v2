@@ -2,10 +2,10 @@ import { Activity, Bot, CheckCircle2, Clock, TrendingUp, Users } from "lucide-re
 
 export default function Overview() {
   const stats = [
-    { label: "Active Agents", value: "12", icon: Bot, trend: "+2 this week", color: "blue" },
-    { label: "Tasks Completed", value: "847", icon: CheckCircle2, trend: "+15% from last week", color: "green" },
-    { label: "Avg Response Time", value: "1.2s", icon: Clock, trend: "-0.3s improvement", color: "purple" },
-    { label: "Active Users", value: "34", icon: Users, trend: "+5 today", color: "orange" },
+    { label: "Active Agents", value: "12", icon: Bot, trend: "+2 this week", bgColor: "bg-blue-50", textColor: "text-blue-600" },
+    { label: "Tasks Completed", value: "847", icon: CheckCircle2, trend: "+15% from last week", bgColor: "bg-green-50", textColor: "text-green-600" },
+    { label: "Avg Response Time", value: "1.2s", icon: Clock, trend: "-0.3s improvement", bgColor: "bg-purple-50", textColor: "text-purple-600" },
+    { label: "Active Users", value: "34", icon: Users, trend: "+5 today", bgColor: "bg-orange-50", textColor: "text-orange-600" },
   ];
 
   const recentActivity = [
@@ -25,21 +25,11 @@ export default function Overview() {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, value, icon: Icon, trend, color }) => (
+        {stats.map(({ label, value, icon: Icon, trend, bgColor, textColor }) => (
           <div key={label} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-4">
-              <div className={`p-3 rounded-lg ${
-                color === "blue" ? "bg-blue-50" : 
-                color === "green" ? "bg-green-50" : 
-                color === "purple" ? "bg-purple-50" : 
-                "bg-orange-50"
-              }`}>
-                <Icon className={`w-6 h-6 ${
-                  color === "blue" ? "text-blue-600" : 
-                  color === "green" ? "text-green-600" : 
-                  color === "purple" ? "text-purple-600" : 
-                  "text-orange-600"
-                }`} />
+              <div className={`p-3 rounded-lg ${bgColor}`}>
+                <Icon className={`w-6 h-6 ${textColor}`} />
               </div>
               <TrendingUp className="w-4 h-4 text-green-500" />
             </div>

@@ -5,20 +5,22 @@ from datetime import datetime
 from fastapi import FastAPI
 from github import Github
 
-GH_TOKEN   = os.getenv("GITHUB_TOKEN")
+GH_TOKEN = os.getenv("GITHUB_TOKEN")
 MODEL_NAME = os.getenv("REVIEWER_MODEL", "gpt-4o-mini")  # placeholder
 
-app  = FastAPI(title="Reviewer-API")
+app = FastAPI(title="Reviewer-API")
+
 
 @app.get("/healthz")
 def health():
     return {"status": "ok", "model": MODEL_NAME, "time": datetime.utcnow().isoformat()}
 
+
 @app.post("/review/{pr_number}")
 def review(pr_number: int):
     if not GH_TOKEN or GH_TOKEN.startswith("<"):
         return {"status": "error", "message": "GitHub token not configured"}
-    
+
     try:
         gh = Github(GH_TOKEN)
         repo = gh.get_user().get_repos()[0]
