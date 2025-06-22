@@ -8,7 +8,9 @@ RUN npm run build
 
 # Production stage
 FROM nginx:alpine
+RUN apk add --no-cache bash
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY docker/nginx/start.sh /start.sh
 COPY --from=builder /app/dist /usr/share/nginx/html
 EXPOSE 3000
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/start.sh"]

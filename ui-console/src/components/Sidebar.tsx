@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Folder, MessageSquare, Menu, X, Bot } from "lucide-react";
+import { Home, Folder, MessageSquare, Menu, X, Bot, Cpu } from "lucide-react";
 
 const links = [
   { to: "/overview", label: "Overview", icon: Home },
   { to: "/projects", label: "Projects", icon: Folder },
   { to: "/chat", label: "Chat", icon: MessageSquare },
+  { to: "/architect", label: "Architect", icon: Cpu },
 ];
 
 export default function Sidebar() {
