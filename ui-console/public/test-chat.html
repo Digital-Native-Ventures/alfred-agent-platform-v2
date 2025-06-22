@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat Test</title>
+    <script>
+        async function testChat() {
+            const endpoint = "/api/chat";
+            const content = "Test message from HTML page";
+            
+            console.log("[TEST] Starting chat test");
+            console.log("[TEST] Endpoint:", endpoint);
+            
+            try {
+                console.log("[TEST] Making fetch request");
+                
+                const response = await fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        message: content,
+                    }),
+                });
+                
+                console.log("[TEST] Response status:", response.status);
+                console.log("[TEST] Response ok:", response.ok);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log("[TEST] Response data:", data);
+                
+                document.getElementById('result').innerHTML = 
+                    `<pre>SUCCESS: ${JSON.stringify(data, null, 2)}</pre>`;
+                
+            } catch (error) {
+                console.error("[TEST] Error:", error);
+                document.getElementById('result').innerHTML = 
+                    `<pre>ERROR: ${error.message}</pre>`;
+            }
+        }
+        
+        // Test on page load
+        window.onload = function() {
+            testChat();
+        };
+    </script>
+</head>
+<body>
+    <h1>Chat Test Page</h1>
+    <button onclick="testChat()">Test Chat</button>
+    <div id="result">Testing...</div>
+</body>
+</html>
