@@ -11,6 +11,11 @@ app = FastAPI()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
+@app.get("/healthz")
+def health():
+    return {"status": "ok"}
+
+
 class PRSummaryRequest(BaseModel):
     pr_title: str
     pr_description: Optional[str] = ""
