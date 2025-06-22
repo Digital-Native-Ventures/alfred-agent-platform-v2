@@ -11,6 +11,13 @@ export default defineConfig({
   },
   server: {
     host: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8083',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
   },
   preview: {
     port: 4173,
