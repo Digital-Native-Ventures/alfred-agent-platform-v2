@@ -11,7 +11,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Pull latest canvas doc via ChatGPT API
+      # Debug and pull latest canvas doc via ChatGPT API
+      - name: Debug fetch
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          set -eux
+          curl -v -H "Authorization: Bearer $OPENAI_API_KEY" \
+               -H "Content-Type: application/json" \
+               -d '{"textdoc_id":"6858802ef9c48191b3228ade8e4c7174"}' \
+               https://api.openai.com/v1/canmore/get_textdoc | head -n 20
+
       - name: Download canvas doc
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
