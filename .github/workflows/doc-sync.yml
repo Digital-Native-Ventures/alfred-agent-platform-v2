@@ -16,10 +16,21 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
-          curl -s -H "Authorization: Bearer $OPENAI_API_KEY" \
+          set -e
+          echo "▶ Fetching textdoc…"
+          curl -L -H "Authorization: Bearer $OPENAI_API_KEY" \
+               -w "\nHTTP_STATUS:%{http_code}\n" \
                https://api.openai.com/v1/canmore/textdocs/6858802ef9c48191b3228ade8e4c7174 \
-            | jq -r '.content' \
-            > docs/technical-architecture-guide.md
+               -o /tmp/doc.json
+
+          status=$(tail -n1 /tmp/doc.json | sed "s/HTTP_STATUS://")
+          if [ "$status" != "200" ]; then
+            echo "❌ Got HTTP $status"
+            head -n 10 /tmp/doc.json
+            exit 1
+          fi
+
+          jq -r ".content" /tmp/doc.json > docs/technical-architecture-guide.md
 
       # Commit back to repo if file changed
       - name: Commit updated guide
