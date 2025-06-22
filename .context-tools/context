@@ -1,0 +1,16 @@
+#\!/usr/bin/env bash
+# usage: context push "some note"
+set -e
+REPO_ROOT=$(git rev-parse --show-toplevel)
+FILE=$REPO_ROOT/ui-console/CLAUDE.md
+case "$1" in
+  push)
+    printf "\n- %s  \n" "$(date '+%F %T') — ${*:2}" >> "$FILE"
+    git add "$FILE"
+    git commit -m "docs(claude): ${*:2}" || true
+    git push
+    ;;
+  *)
+    echo "usage: context push \"message\""
+    ;;
+esac

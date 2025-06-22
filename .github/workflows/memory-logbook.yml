@@ -1,0 +1,21 @@
+name: memory-logbook
+on:
+  repository_dispatch:
+    types: [memory_event]   # architect-api POSTs here
+
+jobs:
+  append:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Append to logbook
+        run:  < /dev/null | 
+          FILE="docs/logbook/$(date +'%Y-%m').md"
+          mkdir -p docs/logbook
+          echo "- $(date +'%F %T') — ${{ github.event.client_payload.msg }}" >> "$FILE"
+      - name: Commit & push
+        run: |
+          git config user.email "bot@alfred" && git config user.name "Alfred Bot"
+          git add docs/logbook/*.md
+          git commit -m "chore(logbook): memory event" || exit 0
+          git push
