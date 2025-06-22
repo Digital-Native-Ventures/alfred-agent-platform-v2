@@ -27,6 +27,28 @@ export default {
         sans: ["Inter", "sans-serif"],
       },
       colors: {
+        // Ensure default color palette is available
+        blue: {
+          50: '#eff6ff',
+          500: '#3b82f6',
+          600: '#2563eb',
+        },
+        green: {
+          50: '#f0fdf4',
+          500: '#22c55e',
+          600: '#16a34a',
+        },
+        purple: {
+          50: '#faf5ff',
+          600: '#9333ea',
+        },
+        orange: {
+          50: '#fff7ed',
+          600: '#ea580c',
+        },
+        yellow: {
+          500: '#eab308',
+        },
         brand: { 
           50: "#f0f7ff", 
           100: "#e0f0ff",
