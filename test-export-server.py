@@ -4,7 +4,7 @@ Simple test server for chat export functionality.
 Run with: python3 test-export-server.py
 """
 import json
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse
 
 
