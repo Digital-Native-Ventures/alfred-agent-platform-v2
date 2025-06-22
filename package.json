@@ -1,4 +1,6 @@
 {
+  "name": "alfred-agent-platform-v2",
+  "version": "0.1.0",
   "dependencies": {
     "playwright": "^1.52.0",
     "ttys": "^0.0.3"
