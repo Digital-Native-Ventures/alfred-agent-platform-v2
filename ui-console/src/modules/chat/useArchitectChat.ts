@@ -13,9 +13,6 @@ export function useArchitectChat() {
   const endpoint = import.meta.env.VITE_ARCHITECT_CHAT_ENDPOINT || "/api/chat";
 
   const sendMessage = useCallback(async (content: string) => {
-    console.log("[CHAT] Starting sendMessage with content:", content);
-    console.log("[CHAT] Endpoint:", endpoint);
-    
     // Add user message
     const userMessage: Message = { role: "user", content };
     setMessages(prev => [...prev, userMessage]);
@@ -26,8 +23,6 @@ export function useArchitectChat() {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      console.log("[CHAT] Making fetch request to:", endpoint);
-      
       // Send message to backend using simple POST
       const response = await fetch(`${endpoint}`, {
         method: "POST",
@@ -39,15 +34,11 @@ export function useArchitectChat() {
         }),
       });
 
-      console.log("[CHAT] Response status:", response.status);
-      console.log("[CHAT] Response ok:", response.ok);
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("[CHAT] Response data:", data);
       
       // Update assistant message with response
       setMessages(prev => {
@@ -59,12 +50,10 @@ export function useArchitectChat() {
         return newMessages;
       });
       
-      console.log("[CHAT] Successfully updated message");
       setIsStreaming(false);
 
     } catch (error) {
-      console.error("[CHAT] Error in sendMessage:", error);
-      console.error("[CHAT] Error details:", error instanceof Error ? error.message : String(error));
+      console.error("Failed to send message:", error);
       setIsStreaming(false);
       
       // Update last message with error

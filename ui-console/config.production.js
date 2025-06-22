@@ -3,7 +3,7 @@
 
 export const config = {
   // Architect Chat Backend Endpoint
-  ARCHITECT_CHAT_ENDPOINT: 'https://api.prod.example.com/api/chat',
+  ARCHITECT_CHAT_ENDPOINT: '/api/chat',
   
   // Enable production mode
   NODE_ENV: 'production'
