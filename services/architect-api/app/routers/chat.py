@@ -1,10 +1,13 @@
 import asyncio
 import json
 from typing import List, Dict
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Body
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
+import asyncpg
+import os
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
@@ -93,3 +96,38 @@ async def simple_chat(request: SimpleMessage):
 def chat_health():
     """Simple health check for chat service"""
     return {"status": "ok", "service": "architect-chat"}
+
+
+@router.get("/history")
+async def chat_history(session_id: UUID):
+    try:
+        dsn = "postgresql://postgres:VnVSL/oHOKNYk4qf9ewYQAURIug7LVYO@db-postgres:5432/postgres"
+        conn = await asyncpg.connect(dsn=dsn)
+        rows = await conn.fetch(
+            "SELECT role, content, id FROM memories WHERE session_id=$1 ORDER BY ts ASC", session_id)
+        await conn.close()
+        return [dict(r) for r in rows]
+    except Exception as e:
+        return {"error": str(e), "empty_history": []}
+
+@router.get("/sessions")
+async def chat_sessions(limit: int = 10):
+    try:
+        dsn = "postgresql://postgres:VnVSL/oHOKNYk4qf9ewYQAURIug7LVYO@db-postgres:5432/postgres"
+        conn = await asyncpg.connect(dsn=dsn)
+        rows = await conn.fetch(
+            "SELECT session_id, max(ts) AS last_ts FROM memories GROUP BY session_id ORDER BY last_ts DESC LIMIT $1", limit)
+        await conn.close()
+        return [dict(r) for r in rows]
+    except Exception as e:
+        return {"error": str(e), "empty_sessions": []}
+
+@router.get("/api/chat/history")
+async def history(session_id: UUID):
+    # Return empty history for now since we don't have real data
+    return []
+
+@router.get("/api/chat/sessions")
+async def sessions(limit: int = 10):
+    # Return empty sessions for now since we don't have real data
+    return []

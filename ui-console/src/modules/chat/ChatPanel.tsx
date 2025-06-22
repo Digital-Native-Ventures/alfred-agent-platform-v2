@@ -5,7 +5,9 @@ import { useArchitectChat } from "./useArchitectChat";
 export default function ChatPanel() {
   const [input, setInput] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { messages, sendMessage, isStreaming } = useArchitectChat();
+  const sessionId = "test-session"; // TODO: generate actual session ID
+  const { messages, send } = useArchitectChat(sessionId);
+  const [isStreaming, setIsStreaming] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -15,10 +17,15 @@ export default function ChatPanel() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !isStreaming) {
-      sendMessage(input);
+      setIsStreaming(true);
+      try {
+        await send(input);
+      } finally {
+        setIsStreaming(false);
+      }
       setInput("");
     }
   };

@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Dict, List
 
 import asyncpg
-import openai
+from openai import OpenAI
 import psycopg2
 import redis
 from fastapi import Body, FastAPI, Request
@@ -27,7 +27,7 @@ PG_DSN = os.getenv("PG_DSN")
 NATS_URL = os.getenv("NATS_URL", "nats://nats:4222")
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379/0")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-openai.api_key = OPENAI_API_KEY
+openai_client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = FastAPI()
 
@@ -109,8 +109,8 @@ Your job is to help plan, correct, and guide all agent workflows across Planner,
 📦 Project Sync:
 {sync_summary}"""
 
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
+        response = openai_client.chat.completions.create(
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": request.message},
@@ -118,7 +118,7 @@ Your job is to help plan, correct, and guide all agent workflows across Planner,
             temperature=0.7,
             max_tokens=800,
         )
-        return {"message": response["choices"][0]["message"]["content"]}
+        return {"message": response.choices[0].message.content}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -144,7 +144,7 @@ async def complete(req: Request):
 
     def event_generator():
         try:
-            resp = openai.ChatCompletion.create(
+            stream = openai_client.chat.completions.create(
                 model="gpt-4o-mini",
                 messages=[
                     {
@@ -155,10 +155,9 @@ async def complete(req: Request):
                 ],
                 stream=True,
             )
-            for chunk in resp:
-                delta = chunk.choices[0].delta
-                if delta.get("content"):
-                    yield f"data: {json.dumps({'content': delta.content})}\n\n"
+            for chunk in stream:
+                if chunk.choices[0].delta.content:
+                    yield f"data: {json.dumps({'content': chunk.choices[0].delta.content})}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
 
