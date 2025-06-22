@@ -23,46 +23,34 @@ export function useArchitectChat() {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      // Use GET endpoint for EventSource (SSE only supports GET)
-      eventSourceRef.current = new EventSource(`${endpoint}/stream`);
-      
-      eventSourceRef.current.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        
-        if (data.type === "chunk") {
-          // Append chunk to the last assistant message
-          setMessages(prev => {
-            const newMessages = [...prev];
-            const lastMessage = newMessages[newMessages.length - 1];
-            if (lastMessage.role === "assistant") {
-              lastMessage.content += data.content;
-            }
-            return newMessages;
-          });
-        } else if (data.type === "done") {
-          // Streaming complete
-          setIsStreaming(false);
-          eventSourceRef.current?.close();
-          eventSourceRef.current = null;
-        }
-      };
+      // Send message to backend using simple POST
+      const response = await fetch(`${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: content,
+        }),
+      });
 
-      eventSourceRef.current.onerror = (error) => {
-        console.error("SSE error:", error);
-        setIsStreaming(false);
-        eventSourceRef.current?.close();
-        eventSourceRef.current = null;
-        
-        // Update last message with error
-        setMessages(prev => {
-          const newMessages = [...prev];
-          const lastMessage = newMessages[newMessages.length - 1];
-          if (lastMessage.role === "assistant" && !lastMessage.content) {
-            lastMessage.content = "Sorry, I encountered an error. Please try again.";
-          }
-          return newMessages;
-        });
-      };
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Update assistant message with response
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage.role === "assistant") {
+          lastMessage.content = data.response || "No response received.";
+        }
+        return newMessages;
+      });
+      
+      setIsStreaming(false);
 
     } catch (error) {
       console.error("Failed to send message:", error);
@@ -78,7 +66,7 @@ export function useArchitectChat() {
         return newMessages;
       });
     }
-  }, [messages, endpoint]);
+  }, [endpoint]);
 
   // Cleanup on unmount
   const cleanup = useCallback(() => {

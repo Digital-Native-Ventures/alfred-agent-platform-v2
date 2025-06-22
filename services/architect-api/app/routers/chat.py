@@ -18,6 +18,10 @@ class ChatRequest(BaseModel):
     messages: List[Message]
 
 
+class SimpleMessage(BaseModel):
+    message: str
+
+
 @router.post("/stream")
 async def chat_stream(request: ChatRequest = Body(...)):
     """Stream chat responses using Server-Sent Events"""
@@ -75,6 +79,14 @@ async def chat_stream_get():
             "Access-Control-Allow-Origin": "*",
         }
     )
+
+
+@router.post("")
+async def simple_chat(request: SimpleMessage):
+    """Simple chat endpoint for direct responses"""
+    # Echo response for now
+    response = f"I received your message: '{request.message}'. This is a simple echo response from the Architect AI."
+    return {"response": response, "status": "ok"}
 
 
 @router.get("/health")
