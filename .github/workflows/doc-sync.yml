@@ -20,7 +20,7 @@ jobs:
           echo "▶ Fetching textdoc…"
           curl -L -H "Authorization: Bearer $OPENAI_API_KEY" \
                -w "\nHTTP_STATUS:%{http_code}\n" \
-               https://api.openai.com/v1/canmore/textdocs/6858802ef9c48191b3228ade8e4c7174 \
+               https://api.openai.com/v1/canmore/textdocs/685896d9eed481918565b1b29a4351bc \
                -o /tmp/doc.json
 
           status=$(tail -n1 /tmp/doc.json | sed "s/HTTP_STATUS://")
@@ -53,4 +53,4 @@ jobs:
           curl -X PUT -H "Authorization: Bearer $OPENAI_API_KEY" \
                -H "Content-Type: application/json" \
                -d "{\"content\":$DATA}" \
-               https://api.openai.com/v1/canmore/textdocs/6858802ef9c48191b3228ade8e4c7174
+               https://api.openai.com/v1/canmore/textdocs/685896d9eed481918565b1b29a4351bc
