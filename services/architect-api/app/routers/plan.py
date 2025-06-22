@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix="/plan", tags=["plan"])
 
+
 @router.get("/{phase}")
 def get_plan(phase: str):
     docs_dir = Path("/app/docs")
