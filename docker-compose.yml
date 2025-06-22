@@ -40,12 +40,27 @@ services:
       VITE_DEV_SERVER_HOST: "0.0.0.0"
 
   db-postgres:
-    image: postgres:15
+    image: postgres:15.8
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes: ["pg-data:/var/lib/postgresql/data"]
     ports: ["5432:5432"]
     networks: ["alfred-network"]
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - DAC_OVERRIDE
+      - FOWNER
+      - SETGID
+      - SETUID
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:alpine
