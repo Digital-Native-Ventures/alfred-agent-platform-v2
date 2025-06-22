@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Folder, MessageSquare, Menu, X, Bot, Cpu } from "lucide-react";
+import { Home, Folder, MessageSquare, Menu, X, Bot } from "lucide-react";
 
 const links = [
   { to: "/overview", label: "Overview", icon: Home },
