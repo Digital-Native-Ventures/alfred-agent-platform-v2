@@ -16,9 +16,9 @@ Large logs/live feeds go into `docs/logbook/`.
 - [ ] Wire ChatPage ↔ /chat
 
 ### Shell MVP Checklist
-- [ ] Collapsible sidebar
-- [ ] Active-route highlight
-- [ ] Topbar service bulbs
-- [ ] Routing wired (overview, projects, plan, chat)
-- [ ] Playwright smoke test
+- [x] Collapsible sidebar
+- [x] Active-route highlight
+- [x] Topbar service bulbs
+- [x] Routing wired (overview, projects, plan, chat)
+- [x] Playwright smoke test
 

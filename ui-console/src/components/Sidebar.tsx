@@ -45,9 +45,14 @@ const Sidebar = ({ logoUrl = "/lovable-uploads/4f5a01e8-7502-47aa-9bb4-567065f7d
 
   const navItems = [
     {
-      path: "/",
-      label: "Dashboard",
+      path: "/overview",
+      label: "Overview",
       icon: Home
+    },
+    {
+      path: "/projects",
+      label: "Projects",
+      icon: FileText
     },
     {
       path: "/agents",
@@ -96,7 +101,7 @@ const Sidebar = ({ logoUrl = "/lovable-uploads/4f5a01e8-7502-47aa-9bb4-567065f7d
       <SidebarContent className="pt-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <Link to="/" aria-label="Alfred Dashboard" className="flex items-center justify-center w-full">
+            <Link to="/overview" aria-label="Alfred Dashboard" className="flex items-center justify-center w-full">
               <Avatar className="w-10 h-10">
                 <AvatarImage src={logoUrl} alt="Alfred" />
                 <AvatarFallback className="bg-primary text-white font-bold">{logoFallback}</AvatarFallback>
