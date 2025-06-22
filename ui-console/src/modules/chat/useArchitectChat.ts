@@ -23,23 +23,7 @@ export function useArchitectChat() {
     setMessages(prev => [...prev, assistantMessage]);
 
     try {
-      // Send message to backend
-      const response = await fetch(`${endpoint}/stream`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem("token") || ""}`,
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMessage],
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      // Set up SSE connection
+      // Set up SSE connection first
       eventSourceRef.current = new EventSource(`${endpoint}/stream`);
       
       eventSourceRef.current.onmessage = (event) => {
@@ -79,6 +63,22 @@ export function useArchitectChat() {
           return newMessages;
         });
       };
+
+      // Send message to backend after setting up SSE
+      const response = await fetch(`${endpoint}/stream`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token") || ""}`,
+        },
+        body: JSON.stringify({
+          messages: [...messages, userMessage],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
     } catch (error) {
       console.error("Failed to send message:", error);
       setIsStreaming(false);
