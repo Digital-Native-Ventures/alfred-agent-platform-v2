@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Ensure full height chain */
+html, body, #root {
+  height: 100%;
+}
+
 /* Custom color definitions for Tailwind 4.x */
 @layer base {
   :root {
