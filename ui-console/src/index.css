@@ -1,5 +1,21 @@
+@import "prism-themes/themes/prism-one-dark.css";
+
 @import "tailwindcss";
 
+/* Ensure full height chain and prevent overflow */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Prevent body from growing beyond viewport */
 /* Custom color definitions for Tailwind 4.x */
 @layer base {
   :root {
@@ -26,3 +42,72 @@
 .text-orange-600 { color: rgb(var(--color-orange-600)); }
 .bg-green-500 { background-color: rgb(var(--color-green-500)); }
 .bg-yellow-500 { background-color: rgb(var(--color-yellow-500)); }
+
+/* Chat-specific overflow prevention */
+.chat-message {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+/* Ensure min-height: 0 on flex children to allow proper shrinking */
+.min-h-0 {
+  min-height: 0;
+}
+
+/* Fix focus ring overflow issue - force all rings to be inset */
+.focus\:ring-2:focus {
+  --tw-ring-offset-width: 0px;
+  --tw-ring-inset: inset;
+}
+
+/* Prevent any element from expanding page */
+* {
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+
+/* Ensure body doesn't expand */
+body {
+  position: relative;
+  width: 100vw;
+  max-width: 100vw;
+}
+
+/* Ensure proper text visibility in inputs */
+input[type="text"] {
+  color: #111827 !important; /* gray-900 */
+  background-color: #ffffff !important;
+}
+
+input[type="text"]::placeholder {
+  color: #9ca3af !important; /* gray-400 */
+}
+
+/* Ensure button text is always visible */
+button {
+  color: inherit;
+}
+
+/* Markdown content styling */
+.prose code {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  padding: 0.125rem 0.25rem !important;
+  border-radius: 0.25rem !important;
+  font-size: 0.875rem !important;
+}
+
+.prose pre {
+  background-color: #1e1e1e !important;
+  color: #d4d4d4 !important;
+  border-radius: 0.5rem !important;
+  padding: 1rem !important;
+  overflow-x: auto !important;
+}
+
+.prose pre code {
+  background-color: transparent !important;
+  color: inherit !important;
+  padding: 0 !important;
+}
