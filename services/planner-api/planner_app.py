@@ -9,9 +9,7 @@ from github import Github
 from nats.aio.client import Client as NATS
 
 # Import the plan router
-import sys
-sys.path.append('/app')
-from agents.planner.routes.plan import router as plan_router
+from routes.plan import router as plan_router
 
 PG_DSN = os.getenv("PG_DSN", "")
 NATS_URL = os.getenv("NATS_URL", "nats://nats:4222")
