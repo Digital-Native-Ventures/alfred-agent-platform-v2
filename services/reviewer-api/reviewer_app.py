@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from github import Github
 
 GH_TOKEN = os.getenv("GITHUB_TOKEN")
-MODEL_NAME = os.getenv("REVIEWER_MODEL", "gpt-4o-mini")  # placeholder
+MODEL_NAME = os.getenv("REVIEWER_MODEL", "gpt-4o")  # placeholder
 
 app = FastAPI(title="Reviewer-API")
 

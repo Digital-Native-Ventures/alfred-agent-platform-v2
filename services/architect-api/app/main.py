@@ -112,12 +112,12 @@ Your job is to help plan, correct, and guide all agent workflows across Planner,
 {sync_summary}"""
 
         response = openai_client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-o3",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": request.message},
             ],
-            temperature=0.7,
+            temperature=0.0,
             max_tokens=800,
         )
         return {"message": response.choices[0].message.content}
@@ -147,7 +147,7 @@ async def complete(req: Request):
     def event_generator():
         try:
             stream = openai_client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-o3",
                 messages=[
                     {
                         "role": "system",
