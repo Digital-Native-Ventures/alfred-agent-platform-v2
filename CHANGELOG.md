@@ -1,3 +1,15 @@
+## [Hot-fix] 2025-06-24
+
+### Fixed
+- **ui-console**: Fixed empty assistant messages in streaming chat by accepting multiple API response keys (`response`, `reply`, `message`, `content`)
+- **ui-console**: Improved error handling with detailed logging and graceful fallbacks for empty responses
+- **ui-console**: Hidden debug controls in production builds
+
+### Added  
+- **ui-console**: Response normalizer utility for future-proof API compatibility
+- **ui-console**: Vitest unit testing infrastructure
+- **ui-console**: Environment-based API URL configuration
+
 ## [1.0.9] – 2025-06-20
 
 ### Added
