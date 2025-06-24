@@ -124,6 +124,29 @@ export default function ChatPanelStream() {
     }
   };
 
+  // Debug controls - only shown in development
+  const DebugControls = () => {
+    if (import.meta.env.MODE !== 'development') return null;
+    
+    return (
+      <div className="mt-2 space-x-2">
+        <button 
+          onClick={addTestMessage}
+          className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm"
+        >
+          Add Test Message
+        </button>
+        <button 
+          onClick={testOnChunk}
+          className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded text-sm"
+          style={{ backgroundColor: '#fef3c7', color: '#d97706', cursor: 'pointer' }}
+        >
+          Test onChunk
+        </button>
+      </div>
+    );
+  };
+
   const handleCancel = () => {
     cancel();
     setCurrentPrompt(null);
@@ -159,23 +182,11 @@ export default function ChatPanelStream() {
           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
             <Bot size={20} className="text-white" />
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-lg font-semibold text-gray-900">Architect Assistant</h1>
             <p className="text-sm text-gray-500">Streaming responses with markdown support</p>
           </div>
-          <button 
-            onClick={addTestMessage}
-            className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm"
-          >
-            Add Test Message
-          </button>
-          <button 
-            onClick={testOnChunk}
-            className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded text-sm ml-2"
-            style={{ backgroundColor: '#fef3c7', color: '#d97706', cursor: 'pointer' }}
-          >
-            Test onChunk
-          </button>
+          <DebugControls />
         </div>
       </div>
 
