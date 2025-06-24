@@ -8,11 +8,17 @@ from fastapi import FastAPI
 from github import Github
 from nats.aio.client import Client as NATS
 
+# Import the plan router
+from routes.plan import router as plan_router
+
 PG_DSN = os.getenv("PG_DSN", "")
 NATS_URL = os.getenv("NATS_URL", "nats://nats:4222")
 GH_TOKEN = os.getenv("GITHUB_TOKEN")
 
 app = FastAPI(title="Planner-API")
+
+# Include the plan router
+app.include_router(plan_router)
 
 
 @app.get("/healthz")
