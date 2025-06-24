@@ -1,0 +1,7 @@
+approve_rules:
+  - path: "src/core/**"
+    guard: "extra_review"
+  - path: "src/conversation/**"
+    guard: "extra_review"
+  - path: "**"
+    guard: "default"
