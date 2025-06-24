@@ -14,7 +14,7 @@ from fastapi.responses import JSONResponse, PlainTextResponse, StreamingResponse
 from nats.aio.client import Client as NATS
 from pydantic import BaseModel
 
-from app.routers import plan, chat
+from app.routers import plan, chat, daily_digest, reflect
 
 
 # Simple prompt builder function
@@ -34,6 +34,8 @@ app = FastAPI()
 # Include available routers
 app.include_router(plan.router)
 app.include_router(chat.router)
+app.include_router(daily_digest.router)
+app.include_router(reflect.router)
 
 # TODO: Enable these routers when implemented
 # app.include_router(memory.router)

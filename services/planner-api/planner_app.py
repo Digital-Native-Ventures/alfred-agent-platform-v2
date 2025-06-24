@@ -10,6 +10,7 @@ from nats.aio.client import Client as NATS
 
 # Import the plan router
 from routes.plan import router as plan_router
+from routes.next_prd import router as next_prd_router
 
 PG_DSN = os.getenv("PG_DSN", "")
 NATS_URL = os.getenv("NATS_URL", "nats://nats:4222")
@@ -19,6 +20,7 @@ app = FastAPI(title="Planner-API")
 
 # Include the plan router
 app.include_router(plan_router)
+app.include_router(next_prd_router)
 
 
 @app.get("/healthz")
