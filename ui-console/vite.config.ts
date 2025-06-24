@@ -11,6 +11,13 @@ export default defineConfig({
   },
   server: {
     host: true,
+    proxy: {
+      '/api/chat': {
+        target: process.env.VITE_ARCHITECT_API_URL || 'http://localhost:8083',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   },
   preview: {
     port: 4173,
