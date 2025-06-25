@@ -6,3 +6,4 @@
 | [x]   | 044 | MemorySidebar.jsx                       | Build `MemorySidebar` component calling `/memory/search` for similar docs                           |
 | [ ]    | 045 | architect_ui_actions.js                 | Add "Finalize PRD" action that commits draft to `docs/prd/` and opens PR via GitHub API             |
 | [ ]    | 046 | automation_workflow.md                  | Update `automation_workflow.md` diagram to include Workbench flow                                   |
+| [ ]    | 871 | db/migrations/chat_tables.sql           | DB schema & migrations for chat_sessions + chat_messages tables                                     |
