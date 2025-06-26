@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  # Webhook Relay for persistent URLs
+  webhook-relay:
+    image: webhookrelay/webhookrelayd:latest
+    container_name: webhook-relay
+    environment:
+      - KEY=${WEBHOOK_RELAY_KEY}
+      - SECRET=${WEBHOOK_RELAY_SECRET}
+      - BUCKET=n8n-webhooks
+    command: >
+      --mode tunnel
+      --destination http://n8n:5678
+    networks:
+      - alfred-network
+    restart: unless-stopped
+
+  # Alternative: localtunnel
+  localtunnel:
+    image: efrecon/localtunnel:latest
+    container_name: localtunnel-n8n
+    command: 
+      - "--local-host"
+      - "n8n"
+      - "--port"
+      - "5678"
+      - "--subdomain"
+      - "alfred-n8n"  # This gives you https://alfred-n8n.loca.lt
+    networks:
+      - alfred-network
+    restart: unless-stopped
+
+networks:
+  alfred-network:
+    external: true

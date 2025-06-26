@@ -1,0 +1,8 @@
+tunnel: b808e998-8abe-4fab-b1ad-e2e406625739
+credentials-file: /etc/cloudflared/creds.json
+protocol: quic
+
+ingress:
+  - hostname: n8n.digitalnative.ventures
+    service: http://n8n:5678
+  - service: http_status:404

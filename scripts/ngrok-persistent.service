@@ -1,0 +1,14 @@
+[Unit]
+Description=ngrok tunnel for n8n
+After=network.target
+
+[Service]
+Type=simple
+User=locotoki
+WorkingDirectory=/home/locotoki
+ExecStart=/usr/local/bin/ngrok http 5678 --config /home/locotoki/.ngrok2/ngrok.yml
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

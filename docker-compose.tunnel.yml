@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # Option 1: Cloudflare Tunnel (most reliable, requires Cloudflare account)
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: n8n-cloudflared
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    networks:
+      - alfred-network
+    restart: unless-stopped
+
+  # Option 2: Bore.pub (simple, reliable, free)
+  bore-tunnel:
+    image: ekzhang/bore:latest
+    container_name: n8n-bore
+    command: local 5678 --to bore.pub --port ${BORE_PORT:-5678}
+    network_mode: host
+    restart: unless-stopped
+
+  # Option 3: LocalTunnel with supervisor
+  localtunnel-persistent:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM node:18-alpine
+        RUN npm install -g localtunnel supervisor
+        RUN echo "[program:tunnel]" > /etc/supervisord.conf && \
+            echo "command=lt --port 5678 --subdomain alfred-n8n" >> /etc/supervisord.conf && \
+            echo "autorestart=true" >> /etc/supervisord.conf && \
+            echo "stderr_logfile=/var/log/tunnel.err.log" >> /etc/supervisord.conf && \
+            echo "stdout_logfile=/var/log/tunnel.out.log" >> /etc/supervisord.conf
+        CMD ["supervisord", "-n"]
+    container_name: n8n-localtunnel
+    networks:
+      - alfred-network
+    restart: unless-stopped

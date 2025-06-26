@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  # LocalTunnel for n8n webhooks - provides https://alfred-n8n.loca.lt
+  n8n-tunnel:
+    image: efrecon/localtunnel:latest
+    container_name: n8n-tunnel
+    command: 
+      - "--local-host"
+      - "n8n"
+      - "--port"
+      - "5678"
+      - "--subdomain"
+      - "alfred-n8n"
+    networks:
+      - alfred-network
+    restart: unless-stopped
+    depends_on:
+      - n8n
+    environment:
+      - LT_SUBDOMAIN=alfred-n8n
